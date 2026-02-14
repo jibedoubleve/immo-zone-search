@@ -3,10 +3,9 @@
 
 # Scripts configuration
 config.json
-cities.*
-immoweb_urls.txt
-immoweb_urls.md
 query_params.json
+cities.*
+index.html
 
 # Pythons
 __pycache__/

@@ -75,7 +75,25 @@ def get_coordinates(address, country, username):
     return float(result["lat"]), float(result["lng"])
 
 
-def find_nearby_cities(lat, lng, radius, country, username):
+def get_cities_filter(min_population):
+    """
+    Map min_population to GeoNames cities filter.
+
+    Args:
+        min_population: Minimum population threshold
+
+    Returns:
+        GeoNames cities filter string (cities1000, cities5000, or cities15000)
+    """
+    if min_population >= 15000:
+        return "cities15000"
+    elif min_population >= 5000:
+        return "cities5000"
+    else:
+        return "cities1000"
+
+
+def find_nearby_cities(lat, lng, radius, min_population, username):
     """
     Find cities near a coordinate.
 
@@ -83,19 +101,20 @@ def find_nearby_cities(lat, lng, radius, country, username):
         lat: Center latitude
         lng: Center longitude
         radius: Search radius in km
-        country: Country code
+        min_population: Minimum population (used to select API filter)
         username: GeoNames API username
 
     Returns:
         List of city dictionaries from GeoNames
     """
-    data = geonames_request("findNearbyJSON", {
+    cities_filter = get_cities_filter(min_population)
+
+    data = geonames_request("findNearbyPlaceNameJSON", {
         "lat": lat,
         "lng": lng,
         "radius": radius,
-        "featureClass": "P",  # Populated places
+        "cities": cities_filter,
         "maxRows": 500,
-        "country": country,
         "username": username,
     })
 
@@ -117,6 +136,26 @@ def filter_by_fcode_and_population(cities, fcodes, min_population):
     return [
         city for city in cities
         if city.get("fcode") in fcodes and city.get("population", 0) >= min_population
+    ]
+
+
+def filter_by_regions(cities, regions):
+    """
+    Filter cities by administrative region (adminCode1).
+
+    Args:
+        cities: List of city dictionaries
+        regions: List of region codes (e.g., ["WAL", "BRU"]) or None for no filtering
+
+    Returns:
+        Filtered list of cities (or original list if regions is None/empty)
+    """
+    if not regions:
+        return cities
+
+    return [
+        city for city in cities
+        if city.get("adminCode1") in regions
     ]
 
 
@@ -158,6 +197,7 @@ def main():
     dir_from = config["dir_from"]
     dir_to = config["dir_to"]
     country = config["country"]
+    regions = config.get("regions")
     username = config["geonames_username"]
 
     # Get coordinates for the center address
@@ -167,13 +207,18 @@ def main():
     print("=" * 40)
 
     # Find nearby cities
-    print(f"Searching for cities within {radius}km...")
-    cities = find_nearby_cities(center_lat, center_lng, radius, country, username)
+    print(f"Searching for cities within {radius}km (min pop: {min_population})...")
+    cities = find_nearby_cities(center_lat, center_lng, radius, min_population, username)
     print(f"Found {len(cities)} places")
 
     # Filter by feature code and population
     cities = filter_by_fcode_and_population(cities, fcodes, min_population)
     print(f"After fcode/population filter: {len(cities)} cities")
+
+    # Filter by region
+    if regions:
+        cities = filter_by_regions(cities, regions)
+        print(f"After region filter ({', '.join(regions)}): {len(cities)} cities")
 
     # Filter by direction
     cities = filter_by_direction(cities, center_lat, center_lng, dir_from, dir_to)

@@ -215,10 +215,11 @@ def main():
     with open(OUTPUT_FILE, 'w') as f:
         f.write("# Immoweb Search\n\n")
         f.write("I you want to edit the criteria of the search,\nYou can edit the file `query_params.json`\n\n")
-        f.write("Documentation can be found at README.md\n\n")
+        f.write("Documentation can be found at README.md ")
+        f.write("or on [Github](https://github.com/jibedoubleve/immoweb-search)\n\n")
         f.write(f"> [Search on Immoweb]({combined_url})")
         f.write("\n\n")
-        f.write("# Individual cities\n\n")
+        f.write("# Cities included in the search\n\n")
         for city in cities:
             city_name = city.get("toponymName", city.get("name", ""))
             postal = city_postal_map.get(city_name, "?")

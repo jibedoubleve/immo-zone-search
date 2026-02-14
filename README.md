@@ -1,14 +1,46 @@
-# House Travel
+# House Seeker
 
 Tools to find cities and generate Immoweb search URLs for house hunting in Belgium.
 
 > [!IMPORTANT]
 > This project is "vibe coded" — I wrote very little code myself and mostly supervised Claude AI's output.
 
+## Prerequisites
+
+To check out the code and prepare all the dependencies before executing the scripts:
+
+### Linux / macOS
+
+```bash
+git clone <your-repo>
+cd immoweb-search
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### Windows (PowerShell)
+
+```powershell
+git clone <your-repo>
+cd immoweb-search
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
 ## Usage
 
+### Linux / macOS
+
 ```sh
-./run.sh
+./script/run.sh
+```
+
+### Windows (PowerShell)
+
+```powershell
+.\script\run.ps1
 ```
 
 This runs the full workflow and opens the search results in your browser.
@@ -20,34 +52,30 @@ query_params.json               ← Configuration
         │
         ▼
 ┌─────────────────────┐
-│      run.sh         │         ← Entry point
+│   script/run.sh     │         ← Entry point
 └──────────┬──────────┘
            │
-     ┌─────┴──────┐
-     ▼            ▼
-fetch_cities.py   generate_urls.py
-     │                   │
-     ▼            ┌──────┴──────┐
-cities.json ─────►▼             ▼
-             GeoNames API   Immoweb URL
-             (postal codes)  builder
-                               │
-                               ▼
-                        immoweb_urls.md
-                               │
-                               ▼
-                           pandoc
-                               │
-                               ▼
-                         search.html ← Opens in browser
+           ▼
+    fetch_cities.py             ← Fetches cities from GeoNames API
+           │
+           ▼
+      cities.json               ← Filtered cities with coordinates
+           │
+           ▼
+    show_cities.py              ← Generates HTML page with map
+           │
+           ▼
+      index.html                ← Opens in browser
 ```
 
 | Script | Description |
 |--------|-------------|
-| `run.sh` | Main entry point, orchestrates the workflow |
-| `src/fetch_cities.py` | Fetches cities from GeoNames API, filters by direction |
-| `src/filter_cities.py` | Helper module for compass direction calculations |
+| `script/run.sh` | Main entry point for Linux/macOS |
+| `script/run.ps1` | Main entry point for Windows (PowerShell) |
+| `src/fetch_cities.py` | Fetches cities from GeoNames API, filters by direction and region |
+| `src/filter_cities.py` | Filters cities by compass direction from center point |
 | `src/generate_urls.py` | Generates Immoweb search URLs |
+| `src/show_cities.py` | Generates HTML page with search links and interactive map |
 
 ## Configuration
 
@@ -63,11 +91,21 @@ Edit `query_params.json` to configure the search:
 | `min_population` | Minimum population threshold |
 | `dir_from` / `dir_to` | Compass direction range (clockwise) |
 | `country` | Country code filter (e.g., `BE` for Belgium) |
+| `regions` | List of region codes to include (e.g., `["WAL"]`) or `null` for all |
 | `geonames_username` | GeoNames API username |
+| `language` | Interface language (`fr` or `en`) |
 
 ### Direction Options
 
 `North`, `NorthEast`, `East`, `SouthEast`, `South`, `SouthWest`, `West`, `NorthWest`
+
+### Region Codes (Belgium)
+
+| Code | Region |
+|------|--------|
+| `WAL` | Wallonia |
+| `VLG` | Flanders |
+| `BRU` | Brussels Capital |
 
 ### Immoweb Parameters
 
@@ -99,9 +137,9 @@ Edit `query_params.json` to configure the search:
 | File | Description |
 |------|-------------|
 | `cities.json` | Filtered cities with coordinates (intermediate) |
-| `search.html` | Final output with clickable Immoweb URLs |
+| `index.html` | Final output with clickable Immoweb URLs and interactive map |
 
 ## Dependencies
 
 - Python 3
-- [pandoc](https://pandoc.org/) — Converts markdown to HTML
+- Python packages: `folium`, `jinja2`, `pandas`

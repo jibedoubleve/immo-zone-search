@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="{{ language }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ t.title }}</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+        .container {
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .help-text {
+            font-size: 0.85em;
+            color: #6c757d;
+            background-color: #fff;
+            border-left: 3px solid #dee2e6;
+            padding: 10px 15px;
+            margin: 15px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .help-text code {
+            background-color: #e9ecef;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .help-text a {
+            color: #6c757d;
+        }
+
+        /* Parameters cards */
+        .params-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .params-card {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .params-card h3 {
+            margin: 0 0 12px 0;
+            font-size: 0.85em;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .param-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .param-row:last-child {
+            border-bottom: none;
+        }
+        .param-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .param-value {
+            font-weight: 500;
+            color: #333;
+            font-size: 0.9em;
+        }
+        .param-tag {
+            display: inline-block;
+            background-color: #e9ecef;
+            color: #495057;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            margin-left: 5px;
+        }
+        .param-tag.primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .epc-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            justify-content: flex-end;
+        }
+        .epc-tag {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.75em;
+            font-weight: bold;
+        }
+        .epc-a { background-color: #00a651; color: white; }
+        .epc-b { background-color: #50b848; color: white; }
+        .epc-c { background-color: #bdd630; color: #333; }
+        .epc-d { background-color: #fff200; color: #333; }
+        .epc-e { background-color: #fcb814; color: #333; }
+        .epc-f { background-color: #f36f21; color: white; }
+        .epc-g { background-color: #ed1c24; color: white; }
+
+        .search-action {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .search-button {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 1.2em;
+            box-shadow: 0 2px 5px rgba(0,123,255,0.3);
+            transition: background-color 0.2s, box-shadow 0.2s;
+        }
+        .search-button:hover {
+            background-color: #0056b3;
+            box-shadow: 0 4px 8px rgba(0,123,255,0.4);
+        }
+        .cities-section h2 {
+            font-size: 1em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .city-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            column-count: 3;
+            column-gap: 20px;
+            font-size: 0.9em;
+        }
+        .city-list li {
+            padding: 3px 0;
+            break-inside: avoid;
+        }
+        .city-list a {
+            color: #555;
+            text-decoration: none;
+        }
+        .city-list a:hover {
+            color: #007bff;
+            text-decoration: underline;
+        }
+        .map-section {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        .map-section h2 {
+            font-size: 1em;
+            color: #666;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .map-container {
+            height: 450px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            overflow: hidden;
+            background-color: #fff;
+        }
+        .map-container iframe {
+            border-radius: 8px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .params-grid {
+                grid-template-columns: 1fr;
+            }
+            .city-list {
+                column-count: 2;
+            }
+        }
+        @media (max-width: 480px) {
+            .city-list {
+                column-count: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ t.title }}</h1>
+
+        <div class="help-text">
+            {{ t.description }} <code>query_params.json</code>.<br>
+            {{ t.documentation }}: <a href="https://github.com/jibedoubleve/immoweb-search" target="_blank">GitHub</a>
+        </div>
+
+        <div class="params-grid">
+            <div class="params-card">
+                <h3>{{ t.location_params }}</h3>
+                <div class="param-row">
+                    <span class="param-label">{{ t.center }}</span>
+                    <span class="param-value">{{ address }}</span>
+                </div>
+                <div class="param-row">
+                    <span class="param-label">{{ t.radius }}</span>
+                    <span class="param-value">{{ radius }} km</span>
+                </div>
+                {% if regions %}
+                <div class="param-row">
+                    <span class="param-label">{{ t.regions }}</span>
+                    <span class="param-value">
+                        {% for region in regions %}
+                        <span class="param-tag">{{ region }}</span>
+                        {% endfor %}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="params-card">
+                <h3>{{ t.search_params }}</h3>
+                <div class="param-row">
+                    <span class="param-label">{{ t.transaction }}</span>
+                    <span class="param-value">
+                        <span class="param-tag primary">{{ t[immoweb.transaction] or immoweb.transaction }}</span>
+                    </span>
+                </div>
+                <div class="param-row">
+                    <span class="param-label">{{ t.property_type }}</span>
+                    <span class="param-value">{{ t[immoweb.property_type] or immoweb.property_type }}</span>
+                </div>
+                <div class="param-row">
+                    <span class="param-label">{{ t.price }}</span>
+                    <span class="param-value">
+                        {% if immoweb.min_price or immoweb.max_price %}
+                            {% if immoweb.min_price %}{{ "{:,}".format(immoweb.min_price).replace(",", " ") }} €{% else %}-{% endif %}
+                            →
+                            {% if immoweb.max_price %}{{ "{:,}".format(immoweb.max_price).replace(",", " ") }} €{% else %}-{% endif %}
+                        {% else %}
+                            {{ t.not_specified }}
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="param-row">
+                    <span class="param-label">{{ t.bedrooms }}</span>
+                    <span class="param-value">
+                        {% if immoweb.min_bedrooms or immoweb.max_bedrooms %}
+                            {% if immoweb.min_bedrooms %}{{ t.min }} {{ immoweb.min_bedrooms }}{% endif %}
+                            {% if immoweb.min_bedrooms and immoweb.max_bedrooms %} - {% endif %}
+                            {% if immoweb.max_bedrooms %}{{ t.max }} {{ immoweb.max_bedrooms }}{% endif %}
+                        {% else %}
+                            {{ t.not_specified }}
+                        {% endif %}
+                    </span>
+                </div>
+                {% if immoweb.min_land_surface %}
+                <div class="param-row">
+                    <span class="param-label">{{ t.land_surface }}</span>
+                    <span class="param-value">{{ t.min }} {{ immoweb.min_land_surface }} m²</span>
+                </div>
+                {% endif %}
+                {% if immoweb.epc_scores %}
+                <div class="param-row">
+                    <span class="param-label">{{ t.epc }}</span>
+                    <span class="epc-tags">
+                        {% for score in immoweb.epc_scores %}
+                        <span class="epc-tag epc-{{ score[0] | lower }}">{{ score }}</span>
+                        {% endfor %}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="search-action">
+            <a href="{{ combined_url }}" target="_blank" class="search-button">
+                {{ t.search_button }}
+            </a>
+        </div>
+
+        <div class="cities-section">
+            <h2>{{ t.cities_title }} ({{ cities | length }})</h2>
+            <ul class="city-list">
+                {% for city in cities %}
+                <li>
+                    <a href="{{ city.url }}" target="_blank">{{ city.name }} - {{ city.postal }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="map-section">
+        <h2>{{ t.map_title }}</h2>
+        <div class="map-container">
+            {{ map_html | safe }}
+        </div>
+    </div>
+</body>
+</html>
