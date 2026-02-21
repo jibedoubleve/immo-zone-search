@@ -139,13 +139,32 @@ def create_config() -> dict:
     )
 
     immoweb["property_type"] = prompt_choice(
-        "Property type:",
-        ["house", "apartment", "new-real-estate-project-houses", "villa"],
+        "Property main type (defines the URL path):",
+        ["house", "apartment", "new-real-estate-project-houses"],
         default="house"
     )
 
-    immoweb["min_price"] = prompt_number("Minimum price", default=200000)
-    immoweb["max_price"] = prompt_number("Maximum price", default=500000)
+    immoweb["property_subtypes"] = prompt_multi_choice(
+        "Property subtypes (filtered via propertySubtypes, leave empty for all):",
+        [
+            "HOUSE",
+            "VILLA",
+            "MANSION",
+            "MANOR_HOUSE",
+            "CHALET",
+            "FARMHOUSE",
+            "EXCEPTIONAL_PROPERTY",
+            "TOWN_HOUSE",
+            "CASTLE",
+            "BUNGALOW",
+            "COUNTRY_COTTAGE",
+            "PAVILION",
+        ],
+        defaults=["HOUSE", "VILLA", "MANSION", "MANOR_HOUSE", "CHALET", "FARMHOUSE", "EXCEPTIONAL_PROPERTY", "TOWN_HOUSE", "CASTLE", "BUNGALOW", "COUNTRY_COTTAGE", "PAVILION"]
+    )
+
+    immoweb["min_price"] = prompt_number("Minimum price", default=500000)
+    immoweb["max_price"] = prompt_number("Maximum price", default=800000)
     immoweb["min_bedrooms"] = prompt_number("Minimum bedrooms", default=3)
     immoweb["max_bedrooms"] = prompt_number("Maximum bedrooms (Enter for none)", allow_none=True)
     immoweb["min_land_surface"] = prompt_number("Minimum land surface m² (Enter for none)", allow_none=True)

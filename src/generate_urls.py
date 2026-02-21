@@ -72,8 +72,7 @@ def build_query_params(config, postal_codes):
     immoweb = config.get("immoweb", {})
     country = config.get("country", "BE")
 
-    # Format postal codes as BE-4000,BE-4020,...
-    formatted_codes = ",".join([f"{country}-{code}" for code in postal_codes])
+    formatted_codes = ",".join(postal_codes)
 
     # Build params dict, only including non-null values
     params = {
@@ -100,7 +99,13 @@ def build_query_params(config, postal_codes):
     if epc_scores:
         params["epcScores"] = ",".join(epc_scores)
 
-    return urllib.parse.urlencode(params)
+    # Handle property_subtypes (e.g. MANSION, VILLA, CHALET -> propertySubtypes=MANSION,VILLA,CHALET)
+    property_subtypes = immoweb.get("property_subtypes")
+    if property_subtypes:
+        params["propertySubtypes"] = ",".join(property_subtypes)
+
+    # Use quote_via to keep commas and + unencoded (Immoweb expects literal commas and + in EPC scores)
+    return urllib.parse.urlencode(params, quote_via=lambda s, safe, enc, err: urllib.parse.quote(str(s), safe=",+"))
 
 
 def generate_combined_url(postal_codes, config):

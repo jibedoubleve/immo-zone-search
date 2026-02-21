@@ -235,7 +235,15 @@
                 </div>
                 <div class="param-row">
                     <span class="param-label">{{ t.property_type }}</span>
-                    <span class="param-value">{{ t[immoweb.property_type] or immoweb.property_type }}</span>
+                    <span class="param-value">
+                        {% if immoweb.property_subtypes %}
+                            {% for st in immoweb.property_subtypes %}
+                            <span class="param-tag">{{ st.replace("_", " ").title() }}</span>
+                            {% endfor %}
+                        {% else %}
+                            {{ t[immoweb.property_type] or immoweb.property_type }}
+                        {% endif %}
+                    </span>
                 </div>
                 <div class="param-row">
                     <span class="param-label">{{ t.price }}</span>

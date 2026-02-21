@@ -11,6 +11,7 @@
   "immoweb": {
     "transaction": "for-sale",
     "property_type": "house",
+    "property_subtypes": [],
     "min_price": 200000,
     "max_price": 500000,
     "min_bedrooms": 3,
