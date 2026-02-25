@@ -5,206 +5,329 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ t.title }}</title>
     <style>
+        :root {
+            --color-bg: #f0f2f5;
+            --color-surface: #ffffff;
+            --color-border: #e4e7eb;
+            --color-text: #1a1d23;
+            --color-text-muted: #6b7280;
+            --color-immoweb: #003f7f;
+            --color-immoweb-hover: #002a57;
+            --color-immoweb-light: #e8f0fa;
+            --color-trevi: #c0392b;
+            --color-trevi-hover: #96281b;
+            --color-trevi-light: #fbeaea;
+            --color-tag-bg: #f3f4f6;
+            --color-tag-text: #374151;
+            --radius: 10px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.10);
+        }
+
+        * { box-sizing: border-box; }
+
         body {
             margin: 0;
             padding: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-        }
-        .container {
-            padding: 20px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        .help-text {
-            font-size: 0.85em;
-            color: #6c757d;
-            background-color: #fff;
-            border-left: 3px solid #dee2e6;
-            padding: 10px 15px;
-            margin: 15px 0;
-            border-radius: 0 5px 5px 0;
-        }
-        .help-text code {
-            background-color: #e9ecef;
-            padding: 2px 5px;
-            border-radius: 3px;
-        }
-        .help-text a {
-            color: #6c757d;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.5;
         }
 
-        /* Parameters cards */
+        /* ── Header ── */
+        .header {
+            background: var(--color-surface);
+            border-bottom: 1px solid var(--color-border);
+            padding: 20px 0;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0 0 4px 0;
+            font-size: 1.6em;
+            font-weight: 700;
+            color: var(--color-text);
+            letter-spacing: -0.3px;
+        }
+        .header .subtitle {
+            font-size: 0.82em;
+            color: var(--color-text-muted);
+        }
+        .header .subtitle code {
+            background: var(--color-tag-bg);
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-size: 0.95em;
+        }
+        .header .subtitle a {
+            color: var(--color-text-muted);
+        }
+
+        /* ── Main layout ── */
+        .main {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 28px 20px;
+        }
+
+        /* ── Section label ── */
+        .section-label {
+            font-size: 0.72em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--color-text-muted);
+            margin: 0 0 10px 2px;
+        }
+
+        /* ── Params grid ── */
         .params-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin: 20px 0;
+            gap: 14px;
+            margin-bottom: 24px;
         }
         .params-card {
-            background-color: #fff;
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            background: var(--color-surface);
+            border-radius: var(--radius);
+            padding: 16px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--color-border);
         }
-        .params-card h3 {
-            margin: 0 0 12px 0;
-            font-size: 0.85em;
-            color: #666;
+        .params-card-title {
+            font-size: 0.72em;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.8px;
+            color: var(--color-text-muted);
+            margin: 0 0 12px 0;
         }
         .param-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 6px 0;
-            border-bottom: 1px solid #f0f0f0;
+            padding: 7px 0;
+            border-bottom: 1px solid #f3f4f6;
+            gap: 8px;
         }
-        .param-row:last-child {
-            border-bottom: none;
-        }
+        .param-row:last-child { border-bottom: none; }
         .param-label {
-            color: #666;
-            font-size: 0.9em;
+            color: var(--color-text-muted);
+            font-size: 0.85em;
+            white-space: nowrap;
         }
         .param-value {
-            font-weight: 500;
-            color: #333;
-            font-size: 0.9em;
-        }
-        .param-tag {
-            display: inline-block;
-            background-color: #e9ecef;
-            color: #495057;
-            padding: 3px 8px;
-            border-radius: 4px;
+            font-weight: 600;
             font-size: 0.85em;
-            margin-left: 5px;
+            color: var(--color-text);
+            text-align: right;
         }
-        .param-tag.primary {
-            background-color: #007bff;
-            color: white;
+        .tag {
+            display: inline-block;
+            background: var(--color-tag-bg);
+            color: var(--color-tag-text);
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            font-weight: 500;
+            margin: 1px 2px;
         }
-        .epc-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            justify-content: flex-end;
+        .tag.primary {
+            background: var(--color-immoweb-light);
+            color: var(--color-immoweb);
         }
+        .tag.yes {
+            background: #ecfdf5;
+            color: #065f46;
+        }
+        .tag.no {
+            background: #fef2f2;
+            color: #991b1b;
+        }
+        .epc-tags { display: flex; flex-wrap: wrap; gap: 3px; justify-content: flex-end; }
         .epc-tag {
             display: inline-block;
             padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 0.75em;
-            font-weight: bold;
+            border-radius: 4px;
+            font-size: 0.72em;
+            font-weight: 700;
         }
-        .epc-a { background-color: #00a651; color: white; }
-        .epc-b { background-color: #50b848; color: white; }
-        .epc-c { background-color: #bdd630; color: #333; }
-        .epc-d { background-color: #fff200; color: #333; }
-        .epc-e { background-color: #fcb814; color: #333; }
-        .epc-f { background-color: #f36f21; color: white; }
-        .epc-g { background-color: #ed1c24; color: white; }
+        .epc-a  { background: #00a651; color: #fff; }
+        .epc-b  { background: #50b848; color: #fff; }
+        .epc-c  { background: #bdd630; color: #333; }
+        .epc-d  { background: #fff200; color: #333; }
+        .epc-e  { background: #fcb814; color: #333; }
+        .epc-f  { background: #f36f21; color: #fff; }
+        .epc-g  { background: #ed1c24; color: #fff; }
 
-        .search-action {
-            text-align: center;
-            margin: 30px 0;
+        /* ── Search buttons ── */
+        .search-actions {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 28px;
         }
-        .search-button {
-            display: inline-block;
-            background-color: #007bff;
-            color: white;
-            padding: 15px 30px;
+        .search-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 16px 24px;
+            border-radius: var(--radius);
             text-decoration: none;
-            border-radius: 5px;
-            font-size: 1.2em;
-            box-shadow: 0 2px 5px rgba(0,123,255,0.3);
-            transition: background-color 0.2s, box-shadow 0.2s;
-        }
-        .search-button:hover {
-            background-color: #0056b3;
-            box-shadow: 0 4px 8px rgba(0,123,255,0.4);
-        }
-        .cities-section h2 {
             font-size: 1em;
-            color: #666;
-            margin-bottom: 10px;
+            font-weight: 600;
+            box-shadow: var(--shadow-md);
+            transition: background-color 0.15s, box-shadow 0.15s, transform 0.1s;
+        }
+        .search-btn:hover {
+            box-shadow: 0 6px 18px rgba(0,0,0,0.16);
+            transform: translateY(-1px);
+        }
+        .search-btn:active { transform: translateY(0); }
+        .search-btn-immoweb {
+            background: var(--color-immoweb);
+            color: #fff;
+        }
+        .search-btn-immoweb:hover { background: var(--color-immoweb-hover); }
+        .search-btn-trevi {
+            background: var(--color-trevi);
+            color: #fff;
+        }
+        .search-btn-trevi:hover { background: var(--color-trevi-hover); }
+        .btn-logo {
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85em;
+            font-weight: 800;
+        }
+
+        /* ── Cities section ── */
+        .cities-card {
+            background: var(--color-surface);
+            border-radius: var(--radius);
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+        .cities-card-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .cities-card-header h2 {
+            margin: 0;
+            font-size: 0.85em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--color-text-muted);
+        }
+        .city-count {
+            background: var(--color-tag-bg);
+            color: var(--color-text-muted);
+            font-size: 0.75em;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 20px;
         }
         .city-list {
             list-style: none;
             padding: 0;
             margin: 0;
-            column-count: 3;
-            column-gap: 20px;
-            font-size: 0.9em;
         }
-        .city-list li {
-            padding: 3px 0;
-            break-inside: avoid;
+        .city-item {
+            display: flex;
+            align-items: center;
+            padding: 9px 18px;
+            border-bottom: 1px solid #f9fafb;
+            gap: 12px;
         }
-        .city-list a {
-            color: #555;
+        .city-item:last-child { border-bottom: none; }
+        .city-item:hover { background: #fafbfc; }
+        .city-name {
+            flex: 1;
+            font-size: 0.88em;
+            color: var(--color-text);
+            font-weight: 500;
+        }
+        .city-postal {
+            font-size: 0.78em;
+            color: var(--color-text-muted);
+            background: var(--color-tag-bg);
+            padding: 1px 7px;
+            border-radius: 4px;
+        }
+        .city-links {
+            display: flex;
+            gap: 6px;
+        }
+        .city-link {
+            font-size: 0.75em;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 5px;
             text-decoration: none;
+            transition: opacity 0.15s;
         }
-        .city-list a:hover {
-            color: #007bff;
-            text-decoration: underline;
+        .city-link:hover { opacity: 0.8; }
+        .city-link-immoweb {
+            background: var(--color-immoweb-light);
+            color: var(--color-immoweb);
         }
-        .map-section {
-            max-width: 800px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-        .map-section h2 {
-            font-size: 1em;
-            color: #666;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-        .map-container {
-            height: 450px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-            overflow: hidden;
-            background-color: #fff;
-        }
-        .map-container iframe {
-            border-radius: 8px;
+        .city-link-trevi {
+            background: var(--color-trevi-light);
+            color: var(--color-trevi);
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .params-grid {
-                grid-template-columns: 1fr;
-            }
-            .city-list {
-                column-count: 2;
-            }
+        /* ── Map ── */
+        .map-section { margin-bottom: 40px; }
+        .map-container {
+            height: 460px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--color-border);
+            overflow: hidden;
+        }
+        .map-container iframe { border-radius: var(--radius); }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            .params-grid { grid-template-columns: 1fr; }
+            .search-actions { flex-direction: column; }
         }
         @media (max-width: 480px) {
-            .city-list {
-                column-count: 1;
-            }
+            .city-links { flex-direction: column; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+
+    <div class="header">
         <h1>{{ t.title }}</h1>
+        <p class="subtitle">
+            {{ t.description }} <code>query_params.json</code> —
+            <a href="https://github.com/jibedoubleve/immoweb-search" target="_blank">{{ t.documentation }}</a>
+        </p>
+    </div>
 
-        <div class="help-text">
-            {{ t.description }} <code>query_params.json</code>.<br>
-            {{ t.documentation }}: <a href="https://github.com/jibedoubleve/immoweb-search" target="_blank">GitHub</a>
-        </div>
+    <div class="main">
 
+        <!-- Parameters -->
+        <p class="section-label">{{ t.search_params }}</p>
         <div class="params-grid">
+
+            <!-- Location -->
             <div class="params-card">
-                <h3>{{ t.location_params }}</h3>
+                <p class="params-card-title">{{ t.location_params }}</p>
                 <div class="param-row">
                     <span class="param-label">{{ t.center }}</span>
                     <span class="param-value">{{ address }}</span>
@@ -217,20 +340,19 @@
                 <div class="param-row">
                     <span class="param-label">{{ t.regions }}</span>
                     <span class="param-value">
-                        {% for region in regions %}
-                        <span class="param-tag">{{ region }}</span>
-                        {% endfor %}
+                        {% for region in regions %}<span class="tag">{{ region }}</span>{% endfor %}
                     </span>
                 </div>
                 {% endif %}
             </div>
 
+            <!-- Search criteria -->
             <div class="params-card">
-                <h3>{{ t.search_params }}</h3>
+                <p class="params-card-title">{{ t.search_params }}</p>
                 <div class="param-row">
                     <span class="param-label">{{ t.transaction }}</span>
                     <span class="param-value">
-                        <span class="param-tag primary">{{ t[immoweb.transaction] or immoweb.transaction }}</span>
+                        <span class="tag primary">{{ t[immoweb.transaction] or immoweb.transaction }}</span>
                     </span>
                 </div>
                 <div class="param-row">
@@ -238,7 +360,7 @@
                     <span class="param-value">
                         {% if immoweb.property_subtypes %}
                             {% for st in immoweb.property_subtypes %}
-                            <span class="param-tag">{{ st.replace("_", " ").title() }}</span>
+                            <span class="tag">{{ st.replace("_", " ").title() }}</span>
                             {% endfor %}
                         {% else %}
                             {{ t[immoweb.property_type] or immoweb.property_type }}
@@ -249,9 +371,9 @@
                     <span class="param-label">{{ t.price }}</span>
                     <span class="param-value">
                         {% if immoweb.min_price or immoweb.max_price %}
-                            {% if immoweb.min_price %}{{ "{:,}".format(immoweb.min_price).replace(",", " ") }} €{% else %}-{% endif %}
+                            {% if immoweb.min_price %}{{ "{:,}".format(immoweb.min_price).replace(",", " ") }} €{% else %}–{% endif %}
                             →
-                            {% if immoweb.max_price %}{{ "{:,}".format(immoweb.max_price).replace(",", " ") }} €{% else %}-{% endif %}
+                            {% if immoweb.max_price %}{{ "{:,}".format(immoweb.max_price).replace(",", " ") }} €{% else %}–{% endif %}
                         {% else %}
                             {{ t.not_specified }}
                         {% endif %}
@@ -262,7 +384,7 @@
                     <span class="param-value">
                         {% if immoweb.min_bedrooms or immoweb.max_bedrooms %}
                             {% if immoweb.min_bedrooms %}{{ t.min }} {{ immoweb.min_bedrooms }}{% endif %}
-                            {% if immoweb.min_bedrooms and immoweb.max_bedrooms %} - {% endif %}
+                            {% if immoweb.min_bedrooms and immoweb.max_bedrooms %} – {% endif %}
                             {% if immoweb.max_bedrooms %}{{ t.max }} {{ immoweb.max_bedrooms }}{% endif %}
                         {% else %}
                             {{ t.not_specified }}
@@ -286,31 +408,49 @@
                 </div>
                 {% endif %}
             </div>
+
         </div>
 
-        <div class="search-action">
-            <a href="{{ combined_url }}" target="_blank" class="search-button">
-                {{ t.search_button }}
+        <!-- Search buttons -->
+        <div class="search-actions">
+            <a href="{{ combined_url }}" target="_blank" class="search-btn search-btn-immoweb">
+                <span class="btn-logo">iw</span>
+                {{ t.search_button_immoweb }}
+            </a>
+            <a href="{{ trevi_combined_url }}" target="_blank" class="search-btn search-btn-trevi">
+                <span class="btn-logo">tr</span>
+                {{ t.search_button_trevi }}
             </a>
         </div>
 
-        <div class="cities-section">
-            <h2>{{ t.cities_title }} ({{ cities | length }})</h2>
+        <!-- Cities list -->
+        <div class="cities-card">
+            <div class="cities-card-header">
+                <h2>{{ t.cities_title }}</h2>
+                <span class="city-count">{{ cities | length }}</span>
+            </div>
             <ul class="city-list">
                 {% for city in cities %}
-                <li>
-                    <a href="{{ city.url }}" target="_blank">{{ city.name }} - {{ city.postal }}</a>
+                <li class="city-item">
+                    <span class="city-name">{{ city.name }}</span>
+                    <span class="city-postal">{{ city.postal }}</span>
+                    <div class="city-links">
+                        <a href="{{ city.immoweb_url }}" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="{{ city.trevi_url }}" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
                 </li>
                 {% endfor %}
             </ul>
         </div>
-    </div>
 
-    <div class="map-section">
-        <h2>{{ t.map_title }}</h2>
-        <div class="map-container">
-            {{ map_html | safe }}
+        <!-- Map -->
+        <div class="map-section">
+            <p class="section-label" style="text-align:center; margin-bottom: 12px;">{{ t.map_title }}</p>
+            <div class="map-container">
+                {{ map_html | safe }}
+            </div>
         </div>
+
     </div>
 </body>
 </html>

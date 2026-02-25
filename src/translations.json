@@ -1,9 +1,10 @@
 {
   "fr": {
-    "title": "Recherche Immoweb",
+    "title": "Recherche Immobilière",
     "description": "Pour modifier les critères de recherche, éditez le fichier",
     "documentation": "Documentation",
-    "search_button": "Rechercher sur Immoweb",
+    "search_button_immoweb": "Rechercher sur Immoweb",
+    "search_button_trevi": "Rechercher sur Trevi",
     "cities_title": "Villes incluses dans la recherche",
     "map_title": "Carte de la zone de recherche",
     "location_params": "Zone de recherche",
@@ -26,10 +27,11 @@
     "not_specified": "Non spécifié"
   },
   "en": {
-    "title": "Immoweb Search",
+    "title": "Property Search",
     "description": "To edit the search criteria, modify",
     "documentation": "Documentation",
-    "search_button": "Search on Immoweb",
+    "search_button_immoweb": "Search on Immoweb",
+    "search_button_trevi": "Search on Trevi",
     "cities_title": "Cities included in the search",
     "map_title": "Search Area Map",
     "location_params": "Search area",
@@ -52,10 +54,11 @@
     "not_specified": "Not specified"
   },
   "nl": {
-    "title": "Immoweb Zoeken",
+    "title": "Vastgoedzoekopdracht",
     "description": "Om de zoekcriteria te wijzigen, bewerk het bestand",
     "documentation": "Documentatie",
-    "search_button": "Zoeken op Immoweb",
+    "search_button_immoweb": "Zoeken op Immoweb",
+    "search_button_trevi": "Zoeken op Trevi",
     "cities_title": "Steden in de zoekopdracht",
     "map_title": "Kaart van het zoekgebied",
     "location_params": "Zoekgebied",

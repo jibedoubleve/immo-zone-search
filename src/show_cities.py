@@ -12,7 +12,9 @@ from generate_urls import (
     load_config,
     fetch_postal_code,
     generate_combined_url,
+    generate_trevi_combined_url,
     generate_city_url,
+    generate_trevi_city_url,
 )
 
 OUTPUT_FILE = "index.html"
@@ -80,8 +82,9 @@ def main():
     # Remove duplicates while preserving order
     unique_postal_codes = list(dict.fromkeys(postal_codes))
 
-    # Generate combined URL
+    # Generate combined URLs
     combined_url = generate_combined_url(unique_postal_codes, config)
+    trevi_combined_url = generate_trevi_combined_url(city_postal_map, config)
 
     print(f"Generated URLs for {len(unique_postal_codes)} postal codes")
     print()
@@ -90,10 +93,12 @@ def main():
     cities_data = []
     for city in cities:
         city_name = city.get("toponymName", city.get("name", ""))
+        postal = city_postal_map.get(city_name)
         cities_data.append({
             "name": city_name,
-            "postal": city_postal_map.get(city_name, "?"),
-            "url": generate_city_url(city_name, config),
+            "postal": postal or "?",
+            "immoweb_url": generate_city_url(city_name, config),
+            "trevi_url": generate_trevi_city_url(city_name, postal, config) if postal else None,
         })
 
     # Create the map centered on the main city
@@ -120,6 +125,7 @@ def main():
     template = env.get_template(TEMPLATE_FILE)
     complete_html = template.render(
         combined_url=combined_url,
+        trevi_combined_url=trevi_combined_url,
         cities=cities_data,
         map_html=map_html,
         address=address,

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Generate Immoweb search URLs for cities.
+Generate Immoweb and Trevi search URLs for cities.
 """
 import json
 import urllib.request
@@ -11,7 +11,22 @@ CONFIG_FILE = "query_params.json"
 
 # URLs
 IMMOWEB_BASE_URL = "https://www.immoweb.be/en/search"
+TREVI_BASE_URL = "https://www.trevi.be/fr/acheter-bien-immobilier"
 GEONAMES_API_URL = "http://api.geonames.org/findNearbyPostalCodesJSON"
+
+# Trevi mappings derived from shared immoweb config values
+TREVI_TRANSACTION_MAP = {
+    "for-sale": 0,
+    "for-rent": 1,
+}
+TREVI_PROPERTY_PATH_MAP = {
+    "house": "maisons",
+    "apartment": "appartements",
+}
+TREVI_PROPERTY_CATEGORY_MAP = {
+    "house": 1,
+    "apartment": 2,
+}
 
 
 def load_config():
@@ -128,6 +143,73 @@ def generate_combined_url(postal_codes, config):
     url = f"{IMMOWEB_BASE_URL}/{property_type}/{transaction}?{query_string}"
 
     return url
+
+
+def _trevi_base_params(config):
+    """
+    Build the common Trevi query parameters from shared immoweb config.
+
+    Returns:
+        (params_list, path_segment) tuple
+    """
+    immoweb = config.get("immoweb", {})
+    property_type = immoweb.get("property_type", "house")
+
+    params = [
+        ("purpose", TREVI_TRANSACTION_MAP.get(immoweb.get("transaction", "for-sale"), 0)),
+        ("estatecategory", TREVI_PROPERTY_CATEGORY_MAP.get(property_type, 1)),
+    ]
+
+    min_price = immoweb.get("min_price")
+    if min_price is not None:
+        params.append(("minprice", min_price))
+
+    max_price = immoweb.get("max_price")
+    if max_price is not None:
+        params.append(("maxprice", max_price))
+
+    path_segment = TREVI_PROPERTY_PATH_MAP.get(property_type, "maisons")
+    return params, path_segment
+
+
+def generate_trevi_combined_url(city_postal_map, config):
+    """
+    Generate a single Trevi URL covering all cities using zips[] parameters.
+    City names are kept with their original accents (e.g. 4000_Liège).
+
+    Args:
+        city_postal_map: Dict mapping city name -> postal code
+        config: Configuration dictionary
+
+    Returns:
+        Combined Trevi search URL
+    """
+    params, path_segment = _trevi_base_params(config)
+
+    for city_name, postal_code in city_postal_map.items():
+        params.append(("zips[]", f"{postal_code}_{city_name}"))
+
+    query_string = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
+    return f"{TREVI_BASE_URL}/{path_segment}?{query_string}"
+
+
+def generate_trevi_city_url(city_name, postal_code, config):
+    """
+    Generate a Trevi search URL for a single city.
+
+    Args:
+        city_name: City name with original accents (e.g. "Liège")
+        postal_code: Postal code for the city (e.g. "4000")
+        config: Configuration dictionary
+
+    Returns:
+        Trevi search URL for the city
+    """
+    params, path_segment = _trevi_base_params(config)
+    params.append(("zips[]", f"{postal_code}_{city_name}"))
+
+    query_string = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
+    return f"{TREVI_BASE_URL}/{path_segment}?{query_string}"
 
 
 def generate_city_url(city_name, config):
