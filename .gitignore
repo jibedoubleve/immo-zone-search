@@ -8,3 +8,6 @@ cities.*
 
 # Pythons
 __pycache__/
+
+# other
+typescript
