@@ -25,7 +25,21 @@
     "apartment": "Appartement",
     "min": "min",
     "max": "max",
-    "not_specified": "Non spécifié"
+    "not_specified": "Non spécifié",
+    "adjust_search": "Ajuster la recherche",
+    "reset_filters": "Réinitialiser",
+    "HOUSE": "Maison",
+    "VILLA": "Villa",
+    "MANSION": "Maison de maître",
+    "MANOR_HOUSE": "Manoir",
+    "CHALET": "Chalet",
+    "FARMHOUSE": "Fermette",
+    "EXCEPTIONAL_PROPERTY": "Bien exceptionnel",
+    "TOWN_HOUSE": "Maison de ville",
+    "CASTLE": "Château",
+    "BUNGALOW": "Bungalow",
+    "COUNTRY_COTTAGE": "Cottage",
+    "PAVILION": "Pavillon"
   },
   "en": {
     "title": "Property Search",
@@ -53,7 +67,21 @@
     "apartment": "Apartment",
     "min": "min",
     "max": "max",
-    "not_specified": "Not specified"
+    "not_specified": "Not specified",
+    "adjust_search": "Adjust search",
+    "reset_filters": "Reset",
+    "HOUSE": "House",
+    "VILLA": "Villa",
+    "MANSION": "Mansion",
+    "MANOR_HOUSE": "Manor House",
+    "CHALET": "Chalet",
+    "FARMHOUSE": "Farmhouse",
+    "EXCEPTIONAL_PROPERTY": "Exceptional Property",
+    "TOWN_HOUSE": "Town House",
+    "CASTLE": "Castle",
+    "BUNGALOW": "Bungalow",
+    "COUNTRY_COTTAGE": "Country Cottage",
+    "PAVILION": "Pavilion"
   },
   "nl": {
     "title": "Vastgoedzoekopdracht",
@@ -81,6 +109,20 @@
     "apartment": "Appartement",
     "min": "min",
     "max": "max",
-    "not_specified": "Niet opgegeven"
+    "not_specified": "Niet opgegeven",
+    "adjust_search": "Zoekopdracht aanpassen",
+    "reset_filters": "Opnieuw instellen",
+    "HOUSE": "Woning",
+    "VILLA": "Villa",
+    "MANSION": "Herenhuis",
+    "MANOR_HOUSE": "Landhuis",
+    "CHALET": "Chalet",
+    "FARMHOUSE": "Boerderij",
+    "EXCEPTIONAL_PROPERTY": "Uitzonderlijk pand",
+    "TOWN_HOUSE": "Stadswoning",
+    "CASTLE": "Kasteel",
+    "BUNGALOW": "Bungalow",
+    "COUNTRY_COTTAGE": "Cottage",
+    "PAVILION": "Paviljoen"
   }
 }
