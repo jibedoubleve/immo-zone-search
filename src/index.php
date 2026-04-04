@@ -1,0 +1,476 @@
+<?php
+// ── Config & translations ─────────────────────────────────────
+$config = file_exists(__DIR__ . '/query_params.json')
+    ? json_decode(file_get_contents(__DIR__ . '/query_params.json'), true)
+    : [];
+
+$allowed_langs = ['fr', 'en', 'nl'];
+$lang = in_array($_GET['lang'] ?? '', $allowed_langs)
+    ? $_GET['lang']
+    : ($config['language'] ?? 'fr');
+$all_t   = file_exists(__DIR__ . '/translations.json')
+    ? json_decode(file_get_contents(__DIR__ . '/translations.json'), true)
+    : [];
+$t       = $all_t[$lang] ?? $all_t['fr'] ?? [];
+$immoweb = $config['immoweb'] ?? [];
+
+$directions   = ['North','NorthEast','East','SouthEast','South','SouthWest','West','NorthWest'];
+$all_subtypes = ['HOUSE','VILLA','MANSION','MANOR_HOUSE','CHALET','FARMHOUSE','EXCEPTIONAL_PROPERTY','TOWN_HOUSE','CASTLE','BUNGALOW','COUNTRY_COTTAGE','PAVILION'];
+$all_epc      = ['A++','A+','A','B','C','D','E','F'];
+
+function h($s)          { return htmlspecialchars((string)($s ?? ''), ENT_QUOTES, 'UTF-8'); }
+function sel($a, $b)    { return $a === $b ? ' selected' : ''; }
+function chk($cond)     { return $cond ? ' checked' : ''; }
+function subtypeLabel(string $st, array $t): string {
+    return $t[$st] ?? ucwords(strtolower(str_replace('_', ' ', $st)));
+}
+?>
+<!DOCTYPE html>
+<html lang="<?= h($lang) ?>">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= h($t['title'] ?? 'Recherche Immobilière') ?></title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <style>
+        :root {
+            --color-bg:             #f0f2f5;
+            --color-surface:        #ffffff;
+            --color-border:         #e4e7eb;
+            --color-text:           #1a1d23;
+            --color-text-muted:     #6b7280;
+            --color-immoweb:        #003f7f;
+            --color-immoweb-hover:  #002a57;
+            --color-immoweb-light:  #e8f0fa;
+            --color-trevi:          #c0392b;
+            --color-trevi-hover:    #96281b;
+            --color-trevi-light:    #fbeaea;
+            --color-immovlan:       #e07b00;
+            --color-immovlan-hover: #b56200;
+            --color-immovlan-light: #fff3e0;
+            --color-tag-bg:         #f3f4f6;
+            --color-tag-text:       #374151;
+            --radius:               10px;
+            --shadow-sm:            0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md:            0 4px 12px rgba(0,0,0,0.10);
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.5;
+        }
+
+        /* ── Action bar ── */
+        .action-bar {
+            position: sticky; top: 0; z-index: 1000;
+            background: var(--color-surface);
+            border-bottom: 1px solid var(--color-border);
+            box-shadow: var(--shadow-md);
+            padding: 10px 20px;
+            display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+        }
+        .btn-search {
+            display: flex; align-items: center; gap: 8px;
+            background: var(--color-immoweb); color: #fff;
+            border: none; border-radius: var(--radius);
+            padding: 10px 20px; font-size: 0.95em; font-weight: 600;
+            cursor: pointer; transition: background 0.15s;
+            white-space: nowrap;
+        }
+        .btn-search:hover   { background: var(--color-immoweb-hover); }
+        .btn-search:disabled { opacity: 0.6; cursor: not-allowed; }
+        .action-divider { width: 1px; height: 32px; background: var(--color-border); }
+        .result-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+        .search-btn {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 18px; border-radius: var(--radius);
+            text-decoration: none; font-size: 0.88em; font-weight: 600;
+            box-shadow: var(--shadow-sm); transition: background 0.15s, transform 0.1s;
+            white-space: nowrap;
+        }
+        .search-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+        .search-btn-immoweb  { background: var(--color-immoweb);  color: #fff; }
+        .search-btn-immoweb:hover  { background: var(--color-immoweb-hover); }
+        .search-btn-trevi    { background: var(--color-trevi);    color: #fff; }
+        .search-btn-trevi:hover    { background: var(--color-trevi-hover); }
+        .search-btn-immovlan { background: var(--color-immovlan); color: #fff; }
+        .search-btn-immovlan:hover { background: var(--color-immovlan-hover); }
+        .btn-logo {
+            width: 20px; height: 20px; border-radius: 4px;
+            background: rgba(255,255,255,0.25);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.78em; font-weight: 800;
+        }
+        #search-status {
+            font-size: 0.82em; color: #c0392b;
+            padding: 4px 10px; background: #fbeaea;
+            border-radius: 6px; margin-left: auto;
+        }
+        [hidden] { display: none !important; }
+        .spinner {
+            width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Tabs ── */
+        .main { max-width: 900px; margin: 0 auto; padding: 20px 20px 40px; }
+        .tabs {
+            display: flex; gap: 4px;
+            border-bottom: 2px solid var(--color-border);
+            margin-bottom: 20px;
+        }
+        .tab-btn {
+            padding: 8px 18px; border: none; background: none;
+            font-size: 0.88em; font-weight: 600; color: var(--color-text-muted);
+            cursor: pointer; border-bottom: 2px solid transparent;
+            margin-bottom: -2px; transition: color 0.15s, border-color 0.15s;
+        }
+        .tab-btn:hover  { color: var(--color-text); }
+        .tab-btn.active { color: var(--color-immoweb); border-bottom-color: var(--color-immoweb); }
+
+        /* ── Params tab ── */
+        .params-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+        }
+        .params-card {
+            background: var(--color-surface); border-radius: var(--radius);
+            padding: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--color-border);
+        }
+        .params-card-title {
+            font-size: 0.72em; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.8px; color: var(--color-text-muted); margin: 0 0 12px;
+        }
+        .param-row {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            padding: 7px 0; border-bottom: 1px solid #f3f4f6; gap: 12px;
+        }
+        .param-row:last-child { border-bottom: none; }
+        .param-label { color: var(--color-text-muted); font-size: 0.85em; white-space: nowrap; padding-top: 4px; }
+        .param-value { font-size: 0.85em; text-align: right; flex: 1; }
+        .form-input {
+            width: 100%; padding: 6px 10px; border: 1px solid var(--color-border);
+            border-radius: 6px; font-size: 0.85em; color: var(--color-text);
+            background: var(--color-bg); outline: none; transition: border-color 0.15s;
+        }
+        .form-input:focus { border-color: var(--color-immoweb); background: #fff; }
+        .form-input-sm { width: 80px; }
+        .section-compass { display: flex; align-items: center; gap: 16px; }
+        .section-compass > div { flex: 1; }
+
+        /* ── Filter chips ── */
+        .filter-label {
+            font-size: 0.72em; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.8px; color: var(--color-text-muted);
+            display: block; margin-bottom: 8px;
+        }
+        .filter-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .filter-sep  { color: var(--color-text-muted); font-size: 0.85em; }
+        .filter-unit { font-size: 0.82em; color: var(--color-text-muted); }
+        .filter-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 14px; }
+        .filter-chip {
+            display: inline-flex; align-items: center; padding: 3px 10px;
+            border-radius: 20px; border: 1px solid var(--color-border);
+            background: var(--color-bg); cursor: pointer;
+            font-size: 0.78em; font-weight: 500; color: var(--color-text-muted);
+            transition: all 0.12s; user-select: none;
+        }
+        .filter-chip input[type="checkbox"] { display: none; }
+        .filter-chip:has(input:checked) {
+            background: var(--color-immoweb-light); color: var(--color-immoweb);
+            border-color: var(--color-immoweb);
+        }
+        .filter-footer {
+            display: flex; justify-content: flex-end;
+            padding-top: 10px; border-top: 1px solid var(--color-border);
+        }
+        .filter-reset {
+            background: none; border: 1px solid var(--color-border); border-radius: 6px;
+            padding: 6px 14px; font-size: 0.82em; color: var(--color-text-muted);
+            cursor: pointer; transition: all 0.12s;
+        }
+        .filter-reset:hover { border-color: var(--color-text-muted); color: var(--color-text); }
+        .tag {
+            display: inline-block; background: var(--color-tag-bg); color: var(--color-tag-text);
+            padding: 2px 8px; border-radius: 5px; font-size: 0.8em; font-weight: 500; margin: 1px 2px;
+        }
+
+        /* ── Map tab ── */
+        #map { height: 520px; border-radius: var(--radius); border: 1px solid var(--color-border); }
+
+        /* ── Cities tab ── */
+        .cities-card {
+            background: var(--color-surface); border-radius: var(--radius);
+            border: 1px solid var(--color-border); box-shadow: var(--shadow-sm); overflow: hidden;
+        }
+        .cities-card-header {
+            padding: 14px 18px; border-bottom: 1px solid var(--color-border);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .cities-card-header h2 {
+            margin: 0; font-size: 0.85em; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.8px; color: var(--color-text-muted);
+        }
+        .city-count {
+            background: var(--color-tag-bg); color: var(--color-text-muted);
+            font-size: 0.75em; font-weight: 600; padding: 2px 8px; border-radius: 20px;
+        }
+        .city-list { list-style: none; padding: 0; margin: 0; }
+        .city-item {
+            display: flex; align-items: center; padding: 9px 18px;
+            border-bottom: 1px solid #f9fafb; gap: 12px;
+        }
+        .city-item:last-child { border-bottom: none; }
+        .city-item:hover { background: #fafbfc; }
+        .city-name   { flex: 1; font-size: 0.88em; font-weight: 500; }
+        .city-postal { font-size: 0.78em; color: var(--color-text-muted); background: var(--color-tag-bg); padding: 1px 7px; border-radius: 4px; }
+        .city-links  { display: flex; gap: 6px; }
+        .city-link   { font-size: 0.75em; font-weight: 600; padding: 3px 10px; border-radius: 5px; text-decoration: none; transition: opacity 0.15s; }
+        .city-link:hover { opacity: 0.8; }
+        .city-link-immoweb  { background: var(--color-immoweb-light);  color: var(--color-immoweb); }
+        .city-link-trevi    { background: var(--color-trevi-light);    color: var(--color-trevi); }
+        .city-link-immovlan { background: var(--color-immovlan-light); color: var(--color-immovlan); }
+        .empty-state { padding: 40px; text-align: center; color: var(--color-text-muted); font-size: 0.88em; }
+
+        /* ── Lang switcher ── */
+        .lang-switcher { display: flex; gap: 4px; margin-left: auto; }
+        .lang-btn {
+            padding: 4px 10px; border-radius: 6px; border: 1px solid var(--color-border);
+            font-size: 0.78em; font-weight: 600; color: var(--color-text-muted);
+            text-decoration: none; background: none; transition: all 0.12s;
+        }
+        .lang-btn:hover { border-color: var(--color-immoweb); color: var(--color-immoweb); }
+        .lang-btn.active { background: var(--color-immoweb); color: #fff; border-color: var(--color-immoweb); }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            .params-grid { grid-template-columns: 1fr; }
+            .result-buttons { gap: 6px; }
+            .search-btn { padding: 8px 12px; font-size: 0.82em; }
+            .city-links { flex-wrap: wrap; }
+        }
+    </style>
+    <script>const DEFAULT_CONFIG = <?= json_encode($config, JSON_UNESCAPED_UNICODE) ?>;</script>
+</head>
+<body>
+
+<!-- ── Sticky action bar ─────────────────────────────────────── -->
+<div class="action-bar">
+    <button id="btn-search" class="btn-search">
+        <span id="search-spinner" class="spinner" hidden></span>
+        <span id="search-label">Générer les liens</span>
+    </button>
+    <div class="action-divider"></div>
+    <div id="result-buttons" class="result-buttons" hidden>
+        <a id="btn-immoweb" href="#" target="_blank" class="search-btn search-btn-immoweb">
+            <span class="btn-logo">iw</span><?= h($t['search_button_immoweb'] ?? 'Immoweb') ?>
+        </a>
+        <a id="btn-trevi" href="#" target="_blank" class="search-btn search-btn-trevi">
+            <span class="btn-logo">tr</span><?= h($t['search_button_trevi'] ?? 'Trevi') ?>
+        </a>
+        <a id="btn-immovlan" href="#" target="_blank" class="search-btn search-btn-immovlan">
+            <span class="btn-logo">iv</span><?= h($t['search_button_immovlan'] ?? 'Immovlan') ?>
+        </a>
+    </div>
+    <span id="search-status" hidden></span>
+    <nav class="lang-switcher">
+        <?php foreach ($allowed_langs as $l): ?>
+        <a href="?lang=<?= h($l) ?>" class="lang-btn<?= $l === $lang ? ' active' : '' ?>"><?= strtoupper($l) ?></a>
+        <?php endforeach; ?>
+    </nav>
+</div>
+
+<!-- ── Main ──────────────────────────────────────────────────── -->
+<div class="main">
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="params"><?= h($t['search_params'] ?? 'Paramètres') ?></button>
+        <button class="tab-btn" data-tab="map"><?= h($t['map_title'] ?? 'Carte') ?></button>
+        <button class="tab-btn" data-tab="cities"><?= h($t['cities_title'] ?? 'Villes') ?></button>
+    </div>
+
+    <!-- ── Tab: Paramètres ────────────────────────────────────── -->
+    <div class="tab-panel" id="tab-params">
+        <div class="params-grid">
+
+            <!-- Zone de recherche -->
+            <div class="params-card">
+                <p class="params-card-title"><?= h($t['location_params'] ?? 'Zone de recherche') ?></p>
+                <div class="section-compass">
+                    <div>
+                        <div class="param-row">
+                            <span class="param-label"><?= h($t['center'] ?? 'Centre') ?></span>
+                            <div class="param-value">
+                                <input class="form-input" type="text" id="f-address"
+                                    value="<?= h($config['address'] ?? '') ?>" placeholder="Ex: Liège">
+                            </div>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-label"><?= h($t['radius'] ?? 'Rayon') ?></span>
+                            <div class="param-value" style="display:flex;align-items:center;gap:6px;justify-content:flex-end">
+                                <input class="form-input form-input-sm" type="number" id="f-radius"
+                                    value="<?= h($config['radius'] ?? 30) ?>" min="1" max="200">
+                                <span style="font-size:0.82em;color:var(--color-text-muted)">km</span>
+                            </div>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-label"><?= h($t['regions'] ?? 'Régions') ?></span>
+                            <div class="param-value" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+                                <?php foreach (['WAL','BRU','VLG'] as $region): ?>
+                                <label class="filter-chip">
+                                    <input type="checkbox" name="region" value="<?= h($region) ?>"
+                                        <?= chk(in_array($region, $config['regions'] ?? [])) ?>>
+                                    <?= h($region) ?>
+                                </label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-label">Direction de</span>
+                            <div class="param-value">
+                                <select class="form-input" id="f-dir-from">
+                                    <?php foreach ($directions as $d): ?>
+                                    <option value="<?= h($d) ?>"<?= sel($d, $config['dir_from'] ?? 'North') ?>><?= h($d) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-label">Direction à</span>
+                            <div class="param-value">
+                                <select class="form-input" id="f-dir-to">
+                                    <?php foreach ($directions as $d): ?>
+                                    <option value="<?= h($d) ?>"<?= sel($d, $config['dir_to'] ?? 'North') ?>><?= h($d) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-label">Population min.</span>
+                            <div class="param-value">
+                                <input class="form-input" type="number" id="f-min-population"
+                                    value="<?= h($config['min_population'] ?? 5000) ?>" min="0" step="1000">
+                            </div>
+                        </div>
+                    </div>
+                    <canvas id="compass" width="100" height="100" style="flex-shrink:0"></canvas>
+                </div>
+            </div>
+
+            <!-- Critères de recherche -->
+            <div class="params-card" id="filter-section">
+                <p class="params-card-title"><?= h($t['search_params'] ?? 'Critères') ?></p>
+
+                <div class="param-row">
+                    <span class="param-label">Transaction</span>
+                    <div class="param-value">
+                        <select class="form-input" id="f-transaction">
+                            <option value="for-sale"<?= sel('for-sale', $immoweb['transaction'] ?? 'for-sale') ?>><?= h($t['for-sale'] ?? 'À vendre') ?></option>
+                            <option value="for-rent"<?= sel('for-rent', $immoweb['transaction'] ?? '') ?>><?= h($t['for-rent'] ?? 'À louer') ?></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="param-row">
+                    <span class="param-label"><?= h($t['property_type'] ?? 'Type') ?></span>
+                    <div class="param-value">
+                        <select class="form-input" id="f-property-type">
+                            <option value="house"<?= sel('house', $immoweb['property_type'] ?? 'house') ?>><?= h($t['house'] ?? 'Maison') ?></option>
+                            <option value="apartment"<?= sel('apartment', $immoweb['property_type'] ?? '') ?>><?= h($t['apartment'] ?? 'Appartement') ?></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="param-row">
+                    <span class="param-label"><?= h($t['price'] ?? 'Prix') ?></span>
+                    <div class="param-value">
+                        <div class="filter-row" style="justify-content:flex-end">
+                            <input class="form-input form-input-sm" type="number" id="f-min-price"
+                                placeholder="<?= h($t['min'] ?? 'min') ?>" min="0" step="10000"
+                                value="<?= h($immoweb['min_price'] ?? '') ?>">
+                            <span class="filter-sep">→</span>
+                            <input class="form-input form-input-sm" type="number" id="f-max-price"
+                                placeholder="<?= h($t['max'] ?? 'max') ?>" min="0" step="10000"
+                                value="<?= h($immoweb['max_price'] ?? '') ?>">
+                            <span class="filter-unit">€</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="param-row">
+                    <span class="param-label"><?= h($t['bedrooms'] ?? 'Chambres') ?></span>
+                    <div class="param-value">
+                        <div class="filter-row" style="justify-content:flex-end">
+                            <input class="form-input form-input-sm" type="number" id="f-min-bedrooms"
+                                placeholder="<?= h($t['min'] ?? 'min') ?>" min="1"
+                                value="<?= h($immoweb['min_bedrooms'] ?? '') ?>">
+                            <span class="filter-sep">→</span>
+                            <input class="form-input form-input-sm" type="number" id="f-max-bedrooms"
+                                placeholder="<?= h($t['max'] ?? 'max') ?>" min="1"
+                                value="<?= h($immoweb['max_bedrooms'] ?? '') ?>">
+                        </div>
+                    </div>
+                </div>
+
+                <span class="filter-label" style="margin-top:8px"><?= h($t['property_type'] ?? 'Sous-types') ?></span>
+                <div class="filter-chips">
+                    <?php foreach ($all_subtypes as $st): ?>
+                    <label class="filter-chip">
+                        <input type="checkbox" name="subtype" value="<?= h($st) ?>"
+                            <?= chk(!($immoweb['property_subtypes'] ?? []) || in_array($st, $immoweb['property_subtypes'] ?? [])) ?>>
+                        <?= h(subtypeLabel($st, $t)) ?>
+                    </label>
+                    <?php endforeach; ?>
+                </div>
+
+                <span class="filter-label"><?= h($t['epc'] ?? 'PEB') ?></span>
+                <div class="filter-chips">
+                    <?php foreach ($all_epc as $score): ?>
+                    <label class="filter-chip">
+                        <input type="checkbox" name="epc" value="<?= h($score) ?>"
+                            <?= chk(in_array($score, $immoweb['epc_scores'] ?? [])) ?>>
+                        <?= h($score) ?>
+                    </label>
+                    <?php endforeach; ?>
+                </div>
+
+                <div class="filter-footer">
+                    <button type="button" id="f-reset" class="filter-reset">
+                        <?= h($t['reset_filters'] ?? 'Réinitialiser') ?>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ── Tab: Carte ─────────────────────────────────────────── -->
+    <div class="tab-panel" id="tab-map" hidden>
+        <div id="map"></div>
+    </div>
+
+    <!-- ── Tab: Villes ───────────────────────────────────────── -->
+    <div class="tab-panel" id="tab-cities" hidden>
+        <div class="cities-card">
+            <div class="cities-card-header">
+                <h2><?= h($t['cities_title'] ?? 'Villes incluses dans la recherche') ?></h2>
+                <span id="city-count" class="city-count">0</span>
+            </div>
+            <ul id="cities-list" class="city-list">
+                <li class="empty-state">Lance une recherche pour voir les villes.</li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
