@@ -47,7 +47,6 @@ function geonames_get(string $endpoint, array $params): ?array {
         CURLOPT_TIMEOUT        => 10,
     ]);
     $response = curl_exec($ch);
-    curl_close($ch);
     return $response ? json_decode($response, true) : null;
 }
 
@@ -77,7 +76,6 @@ function geonames_get_multi(string $endpoint, array $requests, array $common_par
         $body          = curl_multi_getcontent($ch);
         $results[$key] = $body ? json_decode($body, true) : null;
         curl_multi_remove_handle($mh, $ch);
-        curl_close($ch);
     }
 
     curl_multi_close($mh);
@@ -93,16 +91,12 @@ function get_coordinates(string $address, string $country, string $username): ?a
     return [(float) $data['geonames'][0]['lat'], (float) $data['geonames'][0]['lng']];
 }
 
-function get_cities_filter(int $min_population): string {
-    if ($min_population >= 15000) return 'cities15000';
-    if ($min_population >= 5000)  return 'cities5000';
-    return 'cities1000';
-}
+define('EXCLUDED_FCODES', ['PPLH', 'PPLQ', 'PPLW']);
 
-function find_nearby_cities(float $lat, float $lng, int $radius, int $min_population, string $username): array {
+function find_nearby_cities(float $lat, float $lng, int $radius, string $username): array {
     $data = geonames_get('findNearbyPlaceNameJSON', [
         'lat' => $lat, 'lng' => $lng, 'radius' => $radius,
-        'cities' => get_cities_filter($min_population), 'maxRows' => 500, 'username' => $username,
+        'maxRows' => 500, 'username' => $username,
     ]);
     return $data['geonames'] ?? [];
 }
@@ -147,7 +141,6 @@ if (!file_exists($query_file)) {
     exit;
 }
 $server_config  = json_decode(file_get_contents($query_file), true);
-$default_fcodes = $server_config['fcodes'] ?? ['PPL', 'PPLA', 'PPLA2', 'PPLA3', 'PPLA4'];
 
 // ── Read POST input ───────────────────────────────────────────
 $input = json_decode(file_get_contents('php://input'), true);
@@ -161,8 +154,9 @@ $address  = trim($input['address']        ?? '');
 $radius   = (int) ($input['radius']       ?? 30);
 $regions  = $input['regions']             ?? [];
 $min_pop  = (int) ($input['min_population'] ?? 5000);
-$dir_from = $input['dir_from']            ?? 'North';
-$dir_to   = $input['dir_to']              ?? 'North';
+$dir_from          = $input['dir_from']            ?? 'North';
+$dir_to            = $input['dir_to']              ?? 'North';
+$ignore_population = (bool) ($input['ignore_population'] ?? false);
 
 $allowed_countries = ['BE', 'FR', 'NL', 'LU'];
 $country = in_array($input['country'] ?? '', $allowed_countries, true)
@@ -190,12 +184,19 @@ if (!$coords) {
 }
 [$center_lat, $center_lng] = $coords;
 
-$cities = find_nearby_cities($center_lat, $center_lng, $radius, $min_pop, $username);
+$cities = find_nearby_cities($center_lat, $center_lng, $radius, $username);
 
-// Filter: fcode + population
+// Filter: fcode blacklist
 $cities = array_values(array_filter($cities, fn($c) =>
-    in_array($c['fcode'] ?? '', $default_fcodes) && ($c['population'] ?? 0) >= $min_pop
+    !in_array($c['fcode'] ?? '', EXCLUDED_FCODES)
 ));
+
+// Filter: population
+if (!$ignore_population) {
+    $cities = array_values(array_filter($cities, fn($c) =>
+        ($c['population'] ?? 0) >= $min_pop
+    ));
+}
 
 // Filter: regions
 if ($regions) {

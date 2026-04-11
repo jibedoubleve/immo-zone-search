@@ -35,13 +35,14 @@ function intVal(id) { return parseInt(val(id)) || null; }
 // ── Form state ────────────────────────────────────────────────
 function getSearchParams() {
     return {
-        address:        val('f-address'),
-        radius:         parseInt(val('f-radius')) || 30,
-        country:        val('f-country'),
-        regions:        checks('region'),
-        dir_from:       val('f-dir-from'),
-        dir_to:         val('f-dir-to'),
-        min_population: parseInt(val('f-min-population')) || 5000,
+        address:           val('f-address'),
+        radius:            parseInt(val('f-radius')) || 30,
+        country:           val('f-country'),
+        regions:           checks('region'),
+        dir_from:          val('f-dir-from'),
+        dir_to:            val('f-dir-to'),
+        min_population:    parseInt(val('f-min-population')) || 5000,
+        ignore_population: document.getElementById('f-ignore-population')?.checked ?? false,
     };
 }
 
@@ -319,7 +320,8 @@ function saveConfigCookie() {
         regions:        sp.regions,
         dir_from:       sp.dir_from,
         dir_to:         sp.dir_to,
-        min_population: sp.min_population,
+        min_population:    sp.min_population,
+        ignore_population: sp.ignore_population,
         immoweb: {
             transaction:       fs.transaction,
             property_type:     fs.propertyType,
@@ -412,6 +414,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Direction dropdowns → redraw compass
     document.getElementById('f-dir-from')?.addEventListener('change', drawCompass);
     document.getElementById('f-dir-to')?.addEventListener('change',   drawCompass);
+
+    // Ignore population checkbox → toggle population field
+    document.getElementById('f-ignore-population')?.addEventListener('change', function () {
+        document.getElementById('f-population-row').hidden = this.checked;
+    });
 
     drawCompass();
 });
