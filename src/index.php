@@ -143,11 +143,18 @@ function subtypeLabel(string $st, array $t): string {
                                 </select>
                             </div>
                         </div>
-                        <div class="param-row">
+                        <div class="param-row" id="f-population-row"<?= ($config['ignore_population'] ?? false) ? ' hidden' : '' ?>>
                             <span class="param-label"><?= h($t['min_population'] ?? 'Population min.') ?></span>
                             <div class="param-value">
                                 <input class="form-input" type="number" id="f-min-population"
                                     value="<?= h($config['min_population'] ?? 5000) ?>" min="0" step="1000">
+                            </div>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-label"><?= h($t['no_population_limit'] ?? 'Tous les lieux') ?></span>
+                            <div class="param-value">
+                                <input type="checkbox" id="f-ignore-population"
+                                    <?= chk($config['ignore_population'] ?? false) ?>>
                             </div>
                         </div>
                     </div>

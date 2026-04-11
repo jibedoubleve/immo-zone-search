@@ -5,9 +5,9 @@
   "dir_from": "SouthWest",
   "dir_to": "North",
   "min_population": 2000,
+  "ignore_population": false,
   "country": "BE",
   "regions": ["WAL"],
-  "fcodes": ["PPL", "PPLA", "PPLA2", "PPLA3", "PPLA4"],
   "geonames_username": "your_geonames_username",
   "immoweb": {
     "transaction": "for-sale",
