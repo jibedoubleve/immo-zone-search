@@ -8,7 +8,7 @@
 
 Belgian real estate sites like **Immoweb**, **Trevi**, and **Immovlan** require you to select cities manually — one by one. There is no way to define a geographic zone: you have to know in advance every city you want to include and add each of them individually. If you want to search across a region, that quickly becomes tedious and error-prone.
 
-**House Seeker** automates that. You define your zone precisely (center city, radius, compass arc, region, population threshold), and the app finds all matching towns via the GeoNames API. It then generates ready-to-use search URLs for Immoweb, Trevi, and Immovlan — pre-filled with every city found, so you just click and search.
+**Maizoek** automates that. You define your zone precisely (center city, radius, compass arc, region, population threshold), and the app finds all matching towns via the GeoNames API. It then generates ready-to-use search URLs for Immoweb, Trevi, and Immovlan — pre-filled with every city found, so you just click and search.
 
 ## Architecture
 
