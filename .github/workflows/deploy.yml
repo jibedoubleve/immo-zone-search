@@ -11,6 +11,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate version file
+        run: |
+          VERSION=$(git describe --tags --always --abbrev=7)
+          DATE=$(date -u +"%Y-%m-%d")
+          echo "{\"version\": \"$VERSION\", \"date\": \"$DATE\"}" > src/config/version.json
 
       - name: Deploy via FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5

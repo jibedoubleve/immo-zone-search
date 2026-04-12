@@ -216,6 +216,7 @@ body {
     transition: color 0.15s;
 }
 .footer a:hover { color: var(--color-text); }
+.footer-version { opacity: 0.5; margin-left: 12px; }
 
 /* ── Lang switcher ── */
 .lang-switcher { display: flex; gap: 4px; margin-left: auto; }
