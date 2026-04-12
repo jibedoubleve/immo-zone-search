@@ -22,6 +22,11 @@ $lang = in_array($_GET['lang'] ?? '', $allowed_langs)
 $t       = $all_t[$lang] ?? $all_t['fr'] ?? [];
 $immoweb = $config['immoweb'] ?? [];
 
+$versionFile = __DIR__ . '/config/version.json';
+$versionInfo = file_exists($versionFile)
+    ? json_decode(file_get_contents($versionFile), true)
+    : ['version' => 'dev', 'date' => ''];
+
 $directions   = ['North','NorthEast','East','SouthEast','South','SouthWest','West','NorthWest'];
 $all_subtypes = ['HOUSE','VILLA','MANSION','MANOR_HOUSE','CHALET','FARMHOUSE','EXCEPTIONAL_PROPERTY','TOWN_HOUSE','CASTLE','BUNGALOW','COUNTRY_COTTAGE','PAVILION'];
 $all_epc      = ['A++','A+','A','B','C','D','E','F'];
@@ -281,6 +286,7 @@ function subtypeLabel(string $st, array $t): string {
         </svg>
         Open source — jibedoubleve/immoweb-search
     </a>
+    <span class="footer-version"><?= h($versionInfo['version']) ?></span>
 </footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
