@@ -153,6 +153,6 @@ flowchart LR
 | `src/assets/app.js` | Client-side JS (URL builders, map, filters) |
 | `src/assets/app.css` | Styles |
 | `src/config/query_params.json` | Default search parameters |
-| `src/config/infra.json` | GeoNames credentials (not in repo — see `infra.json.example`) |
+| `src/config/infra.json` | Infrastructure config: GeoNames credentials, language, GoatCounter URL (not in repo — see `infra.json.example`) |
 | `src/config/translations.json` | UI translations (FR, EN, NL) |
 | `cache.sqlite` | SQLite cache for postal codes (auto-created) |

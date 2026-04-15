@@ -23,7 +23,7 @@ $all_t   = file_exists(__DIR__ . '/config/translations.json')
 $allowed_langs = ['fr', 'en', 'nl'];
 $lang = in_array($_GET['lang'] ?? '', $allowed_langs)
     ? $_GET['lang']
-    : ($all_t['selected_language'] ?? 'fr');
+    : ($infra['selected_language'] ?? 'fr');
 $t       = $all_t[$lang] ?? $all_t['fr'] ?? [];
 $immoweb = $config['immoweb'] ?? [];
 

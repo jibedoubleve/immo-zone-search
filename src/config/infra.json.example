@@ -3,5 +3,6 @@
   "goatcounter_url": "https://yoursite.goatcounter.com",
   "logs_user": "your_username",
   "logs_password": "your_plain_text_password",
-  "first_setup": true
+  "first_setup": true,
+  "selected_language": "fr"
 }
