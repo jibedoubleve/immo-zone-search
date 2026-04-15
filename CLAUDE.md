@@ -142,7 +142,7 @@ const TREVI_LOCALITIES = <?= json_encode(...) ?>;
   }
 }
 ```
-`infra.json` (not committed): `{ "geonames_username": "...", "goatcounter_url": "..." }`
+`infra.json` (not committed): `{ "geonames_username": "...", "goatcounter_url": "...", "selected_language": "fr" }`
 
 ---
 
